@@ -139,27 +139,28 @@ umiCollapseHam<-function(reads,bccount, nmin=0,nmax=Inf,ftype=c("intron","exon")
   #   ,list(umicount =hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),
   #         readcount =.N),
   #   by=c("RG","GE")]
-  library(multidplyr)
-  cluster <- create_cluster(opt$num_threads)
-  set_default_cluster(cluster)
-  cluster_copy(cluster,ham_mat)
-  cluster_copy(cluster,hammingFilter)
-  cluster_copy(cluster,HamDist)
-  df <- try(.sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
-        multidplyr::partition(RG, cluster= cluster) %>%
-        dplyr::group_by(RG,GE) %>%
-        dplyr::summarise(umicount=hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),readcount=length(UB)) %>%
-        dplyr::collect())
+#   library(multidplyr)
+#   cluster <- create_cluster(opt$num_threads)
+#   set_default_cluster(cluster)
+#   cluster_copy(cluster,ham_mat)
+#   cluster_copy(cluster,hammingFilter)
+#   cluster_copy(cluster,HamDist)
+#   df <- try(.sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
+#         multidplyr::partition(RG, cluster= cluster) %>%
+#         dplyr::group_by(RG,GE) %>%
+#         dplyr::summarise(umicount=hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),readcount=length(UB)) %>%
+#         dplyr::collect())
 
-  if (class(df) == "try-error") {
-            print("Caught an error during multidplyr, trying linearly...")
-	    parallel::stopCluster(cluster)
-	    rm(cluster)
-	    gc()
-            df <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
-                    dplyr::group_by(RG,GE) %>%
-                    dplyr::summarise(umicount=hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),readcount=length(UB))
-          }
+#   if (class(df) == "try-error") {
+#             print("Caught an error during multidplyr, trying linearly...")
+# 	    parallel::stopCluster(cluster)
+# 	    rm(cluster)
+# 	    gc()
+print("Attempting linear collapse without starting a cluster...")
+df <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
+    dplyr::group_by(RG,GE) %>%
+    dplyr::summarise(umicount=hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),readcount=length(UB))
+#           }
 
 
   return(as.data.table(df))

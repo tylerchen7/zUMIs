@@ -76,25 +76,35 @@ reads2genes <- function(featfiles,chunks,rgfile,cores,samtoolsexc){
 hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
   # umiseq a vector of umis, one per read
   library(dplyr)
+  print("hammingFilter sort umiseq")
   umiseq <- sort(umiseq)
+  print("hammingFilter set uc")
   uc     <- data.frame(us = umiseq,stringsAsFactors = F) %>% dplyr::count(us) # normal UMI counts
 
   if(length(uc$us)>1){
     if(length(uc$us)<100000){ #prevent use of > 100Gb RAM
       Sys.time()
+      print("hammingFilter set umi")
       umi <-  ham_mat(uc$us) #construct pairwise UMI distances
+      print("hammingFilter remove upper triangle of umi")
       umi[upper.tri(umi,diag=T)] <- NA #remove upper triangle of the output matrix
+      print("hammingFilter melt umi")
       umi <- reshape2::melt(umi, varnames = c('row', 'col'), na.rm = TRUE) %>% dplyr::filter( value <= edit  ) #make a long data frame and filter according to cutoff
+      print("hammingFilter add observed freq umi 1")
       umi$n.1 <- uc[umi$row,]$n #add in observed freq
+      print("hammingFilter add observed freq umi 2")
       umi$n.2 <- uc[umi$col,]$n#add in observed freq
+      print("hammingFilter transmute umi")
       umi <- umi %>%dplyr::transmute( rem=if_else( n.1>=n.2, col, row )) %>%  unique() #discard the UMI with fewer reads
     }else{
       print( paste(gbcid," has more than 100,000 reads and thus escapes Hamming Distance collapsing."))
     }
     if(nrow(umi)>0){
+      print("hammingFilter discard filtered umi")
       uc <- uc[-umi$rem,] #discard all filtered UMIs
     }
   }
+  print("hammingFilter set n")
   n <- nrow(uc)
   return(n)
 }
@@ -102,6 +112,7 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
 .sampleReads4collapsing<-function(reads,bccount,nmin=0,nmax=Inf,ft){
   #filter reads by ftype and get bc-wise exon counts
   #join bc-wise total counts
+  print("Running .sampleReads4collapsing")
   rcl<-reads[ftype %in% ft][bccount ,nomatch=0][  n>=nmin ] #
   if(nrow(rcl)>0)  {
     return( rcl[ rcl[ ,exn:=.N,by=RG
@@ -123,6 +134,7 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
 }
 
 umiCollapseID<-function(reads,bccount,nmin=0,nmax=Inf,ftype=c("intron","exon"),...){
+  print("running umiCollapseID")
   retDF<-.sampleReads4collapsing(reads,bccount,nmin,nmax,ftype)
   if(!is.null(retDF)){
     nret<-retDF[, list(umicount=length(unique(UB)),
@@ -161,15 +173,18 @@ df <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
     dplyr::group_by(RG,GE) %>%
     dplyr::summarise(umicount=hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),readcount=length(UB))
 #           }
-
+print("successful df assignment through pipe!")
 
   return(as.data.table(df))
 }
 umiFUNs<-list(umiCollapseID=umiCollapseID,  umiCollapseHam=umiCollapseHam)
 
 collectCounts<-function(reads,bccount,subsample.splits, mapList,HamDist, ...){
+  print("collectCounts subNames")
   subNames<-paste("downsampled",rownames(subsample.splits),sep="_")
+  print("collectCounts umiFUN")
   umiFUN<-ifelse(HamDist==0,"umiCollapseID","umiCollapseHam")
+   print("collectCounts apply tt to mapList...")
   lapply(mapList,function(tt){
     ll<-list( all=umiFUNs[[umiFUN]](reads=reads,
                                 bccount=bccount,
@@ -182,6 +197,7 @@ collectCounts<-function(reads,bccount,subsample.splits, mapList,HamDist, ...){
                                   ftype=tt,
                                   HamDist=HamDist)} )
     )
+    print("collectCounts names downsampling")
     names(ll$downsampling)<-subNames
     ll
   })
@@ -189,6 +205,7 @@ collectCounts<-function(reads,bccount,subsample.splits, mapList,HamDist, ...){
 }
 
 bindList<-function(alldt,newdt){
+  print("running bindList")
   for( i in names(alldt)){
     alldt[[i]][[1]]<-rbind(alldt[[i]][[1]], newdt[[i]][[1]] )
     for(j in names(alldt[[i]][[2]])){
@@ -199,6 +216,7 @@ bindList<-function(alldt,newdt){
 }
 
 convert2countM<-function(alldt,what){
+  print("running convert2countM")
   fmat<-alldt
   for( i in 1:length(alldt)){
     fmat[[i]][[1]]<-.makewide(alldt[[i]][[1]],what)

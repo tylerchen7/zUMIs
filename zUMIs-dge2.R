@@ -105,28 +105,35 @@ for(i in unique(bccount$chunkID)){
                              cores     = opt$num_threads,
                            samtoolsexc=samtoolsexc  )
 
+     print("Setting tmp as collectCounts...")
      tmp<-collectCounts(  reads =reads,
                           bccount=bccount[chunkID==i],
                           subsample.splits=subS,
                           mapList=mapList,
                           HamDist=opt$counting_opts$Ham_Dist
                         )
-
+           
+     print("Binding barcode list...")
      if(i==1){
+       print("i = 1 so setting allC<-tmp") 
        allC<-tmp
     }else{
+       print("i != 1 so setting allC<-bindList(some things)")
        allC<-bindList(alldt=allC,newdt=tmp)
     }
 }
 
+print("Start of if statement...")
 if(any(unlist(lapply(opt$sequence_files, function(x){grepl("UMI",x$base_definition)} ))) ){
+  print("looks like any thing was true. setting final with umi stuff")
   final<-list( umicount  = convert2countM(alldt=allC,what="umicount"),
                readcount = convert2countM(allC,"readcount"))
 }else{
+  print("looks like any thing was false. setting final without umi stuff")
   final<-list(readcount = convert2countM(allC,"readcount"))
 }
 
-
+print("Saving RDS...")
 saveRDS(final,file=paste(opt$out_dir,"/zUMIs_output/expression/",opt$project,".dgecounts.rds",sep=""))
 
 #################

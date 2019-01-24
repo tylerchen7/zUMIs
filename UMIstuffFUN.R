@@ -177,9 +177,9 @@ temp1 <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype)
 print("grouping temp1 by RG, GE")
 temp1 %>% dplyr::group_by(RG,GE)
 print("setting tempumicount equal to hammingFilter(UB, edit = HamDist, gbcid = paste(RG, GE, sep = _")
-tempumicount <- hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_"))
+tempumicount <- hammingFilter(temp1$UB,edit = HamDist,gbcid=paste(RG,GE,sep="_"))
 print("finish temp1 by using summarize on tempumicount")
-temp1 %>% dplyr::summarise(umicount=tempumicount,readcount=length(UB))
+temp1 %>% dplyr::summarise(umicount=tempumicount,readcount=length(temp1$UB))
 #           }
 print("successful temp1 assignment through pipe!")
 

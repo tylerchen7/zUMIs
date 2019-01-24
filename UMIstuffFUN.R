@@ -169,13 +169,24 @@ umiCollapseHam<-function(reads,bccount, nmin=0,nmax=Inf,ftype=c("intron","exon")
 # 	    rm(cluster)
 # 	    gc()
 print("Attempting linear collapse without starting a cluster...")
-df <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
-    dplyr::group_by(RG,GE) %>%
-    dplyr::summarise(umicount=hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),readcount=length(UB))
+# df <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
+#     dplyr::group_by(RG,GE) %>%
+#     dplyr::summarise(umicount=hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),readcount=length(UB))
+print("setting temp1 with .sampleReads4Collapsing")
+temp1 <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) 
+print("grouping temp1 by RG, GE")
+temp1 %>% dplyr::group_by(RG,GE)
+print("attempting to print UB to a text file")
+write.table(UB, UB.txt, append = FALSE, sep = " ", dec = ".",
+            row.names = TRUE, col.names = TRUE)
+print("setting tempumicount equal to hammingFilter(UB, edit = HamDist, gbcid = paste(RG, GE, sep = _")
+tempumicount <- hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_"))
+print("finish temp1 by using summarize on tempumicount")
+temp1 %>% dplyr::summarise(umicount=tempumicount,readcount=length(UB))
 #           }
-print("successful df assignment through pipe!")
+print("successful temp1 assignment through pipe!")
 
-  return(as.data.table(df))
+  return(as.data.table(temp1))
 }
 umiFUNs<-list(umiCollapseID=umiCollapseID,  umiCollapseHam=umiCollapseHam)
 

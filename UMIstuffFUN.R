@@ -177,12 +177,13 @@ temp1 <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype)
 print("grouping temp1 by RG, GE")
 temp1 %>% dplyr::group_by(RG,GE)
 print("writing table to temp1_nopipe.txt")
-write.table(temp1, temp1_nopipe.txt, append = FALSE, sep = " ", dec = ".",
+write.table(temp1, file = "temp1_nopipe.txt", append = FALSE, sep = " ", dec = ".",
             row.names = TRUE, col.names = TRUE)
 print("setting tempumicount equal to hammingFilter(temp1$UB, edit = HamDist, gbcid = paste(temp1$RG, temp1$GE, sep = _")
 tempumicount <- hammingFilter(temp1$UB,edit = HamDist,gbcid=paste(temp1$RG,temp1$GE,sep="_"))
-print("finish temp1 by using summarize on tempumicount")
-temp1 %>% dplyr::summarise(umicount=tempumicount,readcount=length(temp1$UB))
+print("successful run of hammingFilter creates tempumicount!!!")
+print("finish temp1 by using summarize on tempumicount with readcount=length(UB)")
+temp1 %>% dplyr::summarise(umicount=tempumicount,readcount=length(UB))
 #           }
 print("successful temp1 assignment through pipe!")
 

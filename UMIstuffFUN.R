@@ -80,6 +80,9 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
   umiseq <- sort(umiseq)
   print("hammingFilter set uc")
   uc     <- data.frame(us = umiseq,stringsAsFactors = F) %>% dplyr::count(us) # normal UMI counts
+  print("writing uc to uc.txt")
+  write.table(uc, file = "uc.txt", append = FALSE, sep = " ", dec = ".",
+            row.names = TRUE, col.names = TRUE)
 
   if(length(uc$us)>1){
     if(length(uc$us)<100000){ #prevent use of > 100Gb RAM

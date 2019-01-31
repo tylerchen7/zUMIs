@@ -81,9 +81,11 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
   print("hammingFilter set uc")
   uc     <- data.frame(us = umiseq,stringsAsFactors = F) %>% dplyr::count(us) # normal UMI counts
 
+  enteredif <- 0
   print(length(uc$us))
   if(length(uc$us)>1){
     if(length(uc$us)<25000){ #prevent use of > 100Gb RAM
+      enteredif <- 1
       Sys.time()
       print("hammingFilter set umi")
       umi <-  ham_mat(uc$us) #construct pairwise UMI distances
@@ -100,7 +102,9 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
     }else{
       print( paste(gbcid," has more than 25,000 reads and thus escapes Hamming Distance collapsing."))
     }
-    if(nrow(umi)>0){
+    if(enteredif == 0){
+      print("no if")
+      } else if (enteredif == 1 && nrow(umi)>0){
       print("hammingFilter discard filtered umi")
       uc <- uc[-umi$rem,] #discard all filtered UMIs
     }

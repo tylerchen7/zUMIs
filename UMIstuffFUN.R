@@ -84,6 +84,7 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
   write.table(uc, file = "uc.txt", append = FALSE, sep = " ", dec = ".",
             row.names = TRUE, col.names = TRUE)
 
+  print(length(uc$us))
   if(length(uc$us)>1){
     if(length(uc$us)<100000){ #prevent use of > 100Gb RAM
       Sys.time()
@@ -172,25 +173,28 @@ umiCollapseHam<-function(reads,bccount, nmin=0,nmax=Inf,ftype=c("intron","exon")
 # 	    rm(cluster)
 # 	    gc()
 print("Attempting linear collapse without starting a cluster...")
-# df <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
-#     dplyr::group_by(RG,GE) %>%
-#     dplyr::summarise(umicount=hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),readcount=length(UB))
-print("setting temp1 with .sampleReads4Collapsing")
-temp1 <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) 
-print("grouping temp1 by RG, GE")
-temp1 <- temp1 %>% dplyr::group_by(RG,GE)
-print("writing table to temp1_nopipe.txt")
-write.table(temp1, file = "temp1_nopipe.txt", append = FALSE, sep = " ", dec = ".",
-            row.names = TRUE, col.names = TRUE)
-print("setting tempumicount equal to hammingFilter(temp1$UB, edit = HamDist, gbcid = paste(temp1$RG, temp1$GE, sep = _")
-tempumicount <- hammingFilter(temp1$UB,edit = HamDist,gbcid=paste(temp1$RG,temp1$GE,sep="_"))
-print("successful run of hammingFilter creates tempumicount!!!")
-print("finish temp1 by using summarize on tempumicount with readcount=length(UB)")
-temp1 <- temp1 %>% dplyr::summarise(umicount=tempumicount,readcount=length(UB))
+ df <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
+     dplyr::group_by(RG,GE) %>%
+     dplyr::summarise(umicount=hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),readcount=length(UB))
+# print("setting temp1 with .sampleReads4Collapsing")
+# temp1 <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) 
+# print("grouping temp1 by RG, GE")
+# temp1 <- temp1 %>% dplyr::group_by(RG,GE)
+# print("writing table to temp1_nopipe.txt")
+# write.table(temp1, file = "temp1_nopipe.txt", append = FALSE, sep = " 
+# ", dec = ".",
+#            row.names = TRUE, col.names = TRUE)
+# print("setting tempumicount equal to hammingFilter(temp1$UB, edit = 
+# HamDist, gbcid = paste(temp1$RG, temp1$GE, sep = _")
+# tempumicount <- hammingFilter(temp1$UB,edit = 
+# HamDist,gbcid=paste(temp1$RG,temp1$GE,sep="_"))
+# print("successful run of hammingFilter creates tempumicount!!!")
+# print("finish temp1 by using summarize on tempumicount with readcount=length(UB)")
+# temp1 <- temp1 %>% dplyr::summarise(umicount=tempumicount,readcount=length(UB))
 #           }
-print("successful temp1 assignment through pipe!")
-
-  return(as.data.table(temp1))
+  print("successful df assignment through pipe!")
+  write.table(df, file = "df.txt", append = FALSE, sep = " ", dec = ".", row.names = TRUE, col.names = TRUE)
+  return(as.data.table(df))
 }
 umiFUNs<-list(umiCollapseID=umiCollapseID,  umiCollapseHam=umiCollapseHam)
 

@@ -83,6 +83,7 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
 
   enteredif <- 0
   print(length(uc$us))
+  print(gbcid)
   if(length(uc$us)>1){
     if(length(uc$us)<25000){ #prevent use of > 100Gb RAM
       enteredif <- 1

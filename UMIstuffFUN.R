@@ -86,7 +86,7 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
     if(length(uc$us)<20000){ #prevent use of > 100Gb RAM
       enteredif <- 1
       print("entered if")
-      print(paste(gbcid,"has", length(uc$us), "reads and is being collapsed."))
+      print(paste(gbcid[1],"has", length(uc$us), "reads and is being collapsed."))
       print("hammingFilter set umi")
       umi <-  ham_mat(uc$us) #construct pairwise UMI distances
       print("hammingFilter remove upper triangle of umi")
@@ -100,7 +100,7 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
       print("hammingFilter transmute umi")
       umi <- umi %>%dplyr::transmute( rem=if_else( n.1>=n.2, col, row )) %>%  unique() #discard the UMI with fewer reads
     }else{
-      print( paste(gbcid," has", length(uc$us), " reads and thus escapes Hamming Distance collapsing."))
+      print( paste(gbcid[1]," has", length(uc$us), " reads and thus escapes Hamming Distance collapsing."))
     }
     if(enteredif == 0){
       print("no if")

@@ -83,7 +83,7 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
   
   enteredif <- 0
   if(length(uc$us)>1){
-    if(length(uc$us)<25000){ #prevent use of > 100Gb RAM
+    if(length(uc$us)<20000){ #prevent use of > 100Gb RAM
       enteredif <- 1
       print("entered if")
       print(paste(gbcid,"has", length(uc$us), "reads and is being collapsed."))

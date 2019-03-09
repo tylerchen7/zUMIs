@@ -86,8 +86,7 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
     if(length(uc$us)<25000){ #prevent use of > 100Gb RAM
       enteredif <- 1
       print("entered if")
-      print( paste(gbcid," has", length(uc$us), " reads and is being collapsed."))
-      Sys.time()
+      print(paste(gbcid,"has", length(uc$us), "reads and is being collapsed."))
       print("hammingFilter set umi")
       umi <-  ham_mat(uc$us) #construct pairwise UMI distances
       print("hammingFilter remove upper triangle of umi")

@@ -81,6 +81,12 @@ hammingFilter<-function(umiseq, edit=1, gbcid=NULL ){
   print("hammingFilter set uc")
   uc     <- data.frame(us = umiseq,stringsAsFactors = F) %>% dplyr::count(us) # normal UMI counts
   
+  if(edit == 0){
+      print(paste(gbcid[1],"No Collapse"))
+      n <- nrow(uc)
+      return(n)
+  }
+  
   enteredif <- 0
   if(length(uc$us)>1){
     if(length(uc$us)<20000){ #prevent use of > 100Gb RAM
@@ -173,7 +179,18 @@ umiCollapseHam<-function(reads,bccount, nmin=0,nmax=Inf,ftype=c("intron","exon")
 # 	    parallel::stopCluster(cluster)
 # 	    rm(cluster)
 # 	    gc()
-print("Attempting linear collapse without starting a cluster...")
+  print("setting df0 pre-collapse")
+  
+  df0 <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
+     dplyr::group_by(RG,GE) %>%
+     dplyr::summarise(umicount=hammingFilter(UB,edit = 0,gbcid=paste(RG,GE,sep="_")),readcount=length(UB))
+  
+  print("writing df0.txt pre-collapse")
+  
+  write.table(df0, file = "df0.txt", append = TRUE, sep = " ", dec = ".", row.names = TRUE, col.names = TRUE)
+
+ print("Attempting linear collapse without starting a cluster...")
+
  df <- .sampleReads4collapsing(reads,bccount,nmin,nmax,ftype) %>%
      dplyr::group_by(RG,GE) %>%
      dplyr::summarise(umicount=hammingFilter(UB,edit = HamDist,gbcid=paste(RG,GE,sep="_")),readcount=length(UB))
@@ -194,7 +211,7 @@ print("Attempting linear collapse without starting a cluster...")
 # temp1 <- temp1 %>% dplyr::summarise(umicount=tempumicount,readcount=length(UB))
 #           }
   print("successful df assignment through pipe!")
-  write.table(df, file = "df.txt", append = FALSE, sep = " ", dec = ".", row.names = TRUE, col.names = TRUE)
+  write.table(df, file = "df.txt", append = TRUE, sep = " ", dec = ".", row.names = TRUE, col.names = TRUE)
   return(as.data.table(df))
 }
 umiFUNs<-list(umiCollapseID=umiCollapseID,  umiCollapseHam=umiCollapseHam)
